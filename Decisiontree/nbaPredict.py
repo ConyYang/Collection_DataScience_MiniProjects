@@ -1,5 +1,6 @@
 import pandas as pd
 from collections import defaultdict
+import pickle
 
 dataset = pd.read_csv('data.csv')
 dataset.columns = ["Date", "Start", "Visitorteam", "VisitorPTS", "HomeTeam", "HomePTS", "Score Type", "OT?", "ATTEND", "NOTES"]
@@ -10,6 +11,9 @@ result_true = dataset["HomeWin"].values
 
 won_last = defaultdict(int)
 new_dataset = pd.DataFrame()
+
+HomeLastWin = []
+VisitorLastWin = []
 for index, row in dataset.sort_values(by="Date").iterrows():
     home_team = row["HomeTeam"]
     visitor_team = row["Visitorteam"]
@@ -17,9 +21,10 @@ for index, row in dataset.sort_values(by="Date").iterrows():
     row["VisitorLastWin"] = won_last[visitor_team]
     won_last[home_team] = row["HomeWin"]
     won_last[visitor_team] = not row["HomeWin"]
+    HomeLastWin.append(row[-2])
+    VisitorLastWin.append(row[-1])
 
-    print(row)
-    dataset.iloc[index] = row
+dataset["HomeLastWin"] = HomeLastWin
+dataset["VisitorLastWin"] = VisitorLastWin
 
-
-print(dataset)
+dataset.to_csv(r'processedDataset.csv', index=False, header=True)
